@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="setContent(content)">
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Simple Sidebar - Start Bootstrap Template</title>
+
+    <!-- Bootstrap core CSS -->
+    <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link th:href="@{/css/simple-sidebar.css}" rel="stylesheet">
+
+    <!-- Bootstrap core JavaScript -->
+    <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  </head>
+  <body>
+  <th:block th:fragment="content">
+    <div class="container">
+      <div class="col-6">
+        <label><b>채팅방</b></label>
+      </div>
+      <div>
+        <div id="msgArea" class="col" th:text="${userid}"></div>
+        <div class="col-6">
+          <div class="input-group mb-3">
+            <input type="text" id="msg" class="form-control" aria-label="Recipient's username"
+                   aria-describedby="button-addon2">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button" id="button-send">전송</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+
+    <script th:inline="javascript">
+      $(document).ready(function () {
+        $("#button-send").on("click", function (e) {
+          sendMessage();
+          msg.value = '';
+        });
+      })
+
+      let msg = document.getElementById("msg");
+      let userid = $('#msgArea').text();
+
+      let sock = new SockJS("/websocket/chat", null,
+          {transports: ["websocket", "xhr-streaming", "xhr-polling"]});
+      sock.onmessage = onMessage;
+      sock.onclose = onClose;
+      sock.onopen = onOpen;
+
+      function sendMessage() {
+        sock.send(userid + ":" + msg.value);
+      }
+
+      function onMessage(msg) {
+
+        let data = msg.data;
+        let sessionId = null; //데이터를 보낸 사람
+        let message = null;
+
+        let arr = data.split(":");
+
+        for (let i = 0; i < arr.length; i++) {
+          console.log('arr[' + i + ']: ' + arr[i]);
+        }
+
+        let cur_session = userid; //현재 세션에 로그인 한 사람
+        console.log("cur_session : " + cur_session);
+
+        sessionId = arr[0];
+        message = arr[1];
+
+        if (sessionId === cur_session) {
+
+          let str = "<div class='col-6'>";
+          str += "<div class='alert alert-secondary'>";
+          str += "<b>" + sessionId + " : " + message + "</b>";
+          str += "</div></div>";
+
+          $("#msgArea").append(str);
+        } else {
+
+          let str = "<div class='col-6'>";
+          str += "<div class='alert alert-warning'>";
+          str += "<b>" + sessionId + " : " + message + "</b>";
+          str += "</div></div>";
+
+          $("#msgArea").append(str);
+        }
+      }
+
+      //채팅창에서 나갔을 때
+      function onClose(evt) {
+
+        let str = userid + " 님이 퇴장하셨습니다.";
+        $("#msgArea").append(str);
+      }
+
+      //채팅창에 들어왔을 때
+      function onOpen(evt) {
+        let str = userid + "님이 입장하셨습니다.";
+        $("#msgArea").append(str);
+      }
+    </script>
+  </th:block>
+  </body>
+</th:block>
+</html>
