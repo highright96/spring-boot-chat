@@ -10,7 +10,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Slf4j
-@Component
+//@Component
 public class ChatHandler extends TextWebSocketHandler {
 
   private List<WebSocketSession> sessionList = new ArrayList<>();

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Chat</title>
+
+  <!-- Bootstrap core CSS -->
+  <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link th:href="@{/css/simple-sidebar.css}" rel="stylesheet">
+
+  <!-- Bootstrap core JavaScript -->
+  <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <div class="col-6">
+    <h1>[[${room.name}]]</h1>
+  </div>
+  <div>
+    <div id="msgArea" class="col"></div>
+    <div class="col-6">
+      <div class="input-group mb-3">
+        <input type="text" id="msg" class="form-control">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" type="button" id="button-send">전송</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6"></div>
+</div> <!-- /container -->
+</body>
+
+<script th:inline="javascript">
+  $(document).ready(function () {
+
+    var roomId = [[${room.id}]];
+    var username = [[${username}]];
+
+    var sockJs = new SockJS("/ws");
+    var stomp = Stomp.over(sockJs);
+
+    console.log(roomId + " " + username);
+
+    stomp.connect({}, function () {
+      console.log("STOMP Connection")
+
+      stomp.subscribe("/sub/chat/room/" + roomId, function (chat) {
+        var content = JSON.parse(chat.body);
+        var writer = content.writer;
+        var str = '';
+
+        console.log(
+            "sub => roomId : " + content.roomId + "writer : " + content.writer + " message : "
+            + content.message)
+
+        if (writer === username) {
+          str = "<div class='col-6'>";
+          str += "<div class='alert alert-secondary'>";
+          str += "<b>" + writer + " : " + content.message + "</b>";
+          str += "</div></div>";
+        } else {
+          str = "<div class='col-6'>";
+          str += "<div class='alert alert-warning'>";
+          str += "<b>" + writer + " : " + content.message + "</b>";
+          str += "</div></div>";
+        }
+        $("#msgArea").append(str);
+      });
+
+      stomp.send('/pub/chat/enter', {}, JSON.stringify({roomId: roomId, writer: username}))
+    });
+
+    $("#button-send").on("click", function (e) {
+      var msg = document.getElementById("msg");
+      stomp.send('/pub/chat/message', {},
+          JSON.stringify({roomId: roomId, message: msg.value, writer: username}));
+      msg.value = '';
+    });
+  });
+</script>
+</html>
