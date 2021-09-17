@@ -26,7 +26,6 @@ public class UserController {
 
   @PostMapping("/user/new")
   public String create(@RequestParam String name, RedirectAttributes attr) {
-    log.info("{} 유저가 생성되었습니다.", name);
     User user = new User(null, name);
     userRepository.save(user);
     attr.addAttribute("username", user.getName());

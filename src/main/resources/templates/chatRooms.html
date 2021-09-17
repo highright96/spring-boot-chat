@@ -26,8 +26,8 @@
       <p>유저 이름 : [[${username}]]</p>
       <div>
         <ul th:each="room : ${list}">
-          <li><a
-              th:href="@{/chat/room(roomId=${room.id}, username=${username})}">[[${room.name}]]</a>
+          <li>
+            <a th:href="@{/chat/room(roomId=${room.id}, username=${username})}">[[${room.name}]]</a>
           </li>
         </ul>
       </div>

@@ -11,17 +11,23 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @Getter
-public class ChatRoom {
+public class Message {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "chat_room_id")
+  @Column(name = "message_id")
   private Long id;
 
-  private String name;
+  private String senderName;
 
-  public ChatRoom(Long id, String name) {
+  private Long chatRoomId;
+
+  private String content;
+
+  public Message(Long id, String senderName, Long chatRoomId, String content) {
     this.id = id;
-    this.name = name;
+    this.senderName = senderName;
+    this.chatRoomId = chatRoomId;
+    this.content = content;
   }
 }

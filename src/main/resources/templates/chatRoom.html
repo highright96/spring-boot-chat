@@ -26,18 +26,31 @@
     <h1>[[${room.name}]]</h1>
   </div>
   <div>
-    <div id="msgArea" class="col"></div>
+    <div id="msgArea" class="col">
+      <div th:each="message : ${messages}">
+        <div class='col-6'>
+          <div th:if="${message.senderName == username}" class='alert alert-secondary'>
+            <b>[[${message.senderName}]] : [[${message.content}]]</b>
+          </div>
+          <div th:if="${message.senderName != username}" class='alert alert-warning'>
+            <b>[[${message.senderName}]] : [[${message.content}]]</b>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="col-6">
       <div class="input-group mb-3">
         <input type="text" id="msg" class="form-control">
         <div class="input-group-append">
           <button class="btn btn-outline-secondary" type="button" id="button-send">전송</button>
+          <a href="#" th:href="@{/chat/rooms(username=${username})}"
+             class="btn btn-outline-secondary" role="button">뒤로가기</a>
         </div>
       </div>
     </div>
   </div>
   <div class="col-6"></div>
-</div> <!-- /container -->
+</div>
 </body>
 
 <script th:inline="javascript">
@@ -58,10 +71,6 @@
         var content = JSON.parse(chat.body);
         var writer = content.writer;
         var str = '';
-
-        console.log(
-            "sub => roomId : " + content.roomId + "writer : " + content.writer + " message : "
-            + content.message)
 
         if (writer === username) {
           str = "<div class='col-6'>";

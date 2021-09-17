@@ -1,35 +1,34 @@
 package dev.highright96.chat.v2.controller;
 
+import dev.highright96.chat.v2.domain.Message;
+import dev.highright96.chat.v2.domain.MessageRepository;
 import dev.highright96.chat.v2.dto.MessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
+@Transactional
 public class ChatController {
 
   private final SimpMessagingTemplate messagingTemplate;
 
-  /*
-  /pub/chat/enter
-  */
+  private final MessageRepository messageRepository;
+
   @MessageMapping("/chat/enter")
   public void enter(MessageDto message) {
-    String msg = message.getRoomId() + "번 채팅방에 참여했습니다.";
-    message.setMessage(msg);
+    message.setMessage(message.getRoomId() + "번 채팅방에 참여했습니다.");
     messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomId(), message);
   }
 
-  /*
-  /pub/chat/message
-  */
   @MessageMapping("/chat/message")
   public void message(MessageDto msg) {
-    log.info("{}님이 {}번 채팅방에 {}라는 메세지를 보냈습니다.", msg.getWriter(), msg.getRoomId(), msg.getMessage());
+    messageRepository.save(new Message(null, msg.getWriter(), msg.getRoomId(), msg.getMessage()));
     messagingTemplate.convertAndSend("/sub/chat/room/" + msg.getRoomId(), msg);
   }
 }
